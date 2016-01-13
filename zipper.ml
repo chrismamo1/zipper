@@ -4,12 +4,14 @@ let () =
   let compress = ref true in
   let decompress = ref false in
   let small = ref false in
+  let block = ref 9 in
   let speclist = [
     "-file", Arg.Set_string fname, "name of input file";
     "-output", Arg.Set_string oname, "name of output file";
-    "--compress", Arg.Set compress, "switch to compress file";
+    "--compress", Arg.Set compress, "switch to compress file [default]";
     "--decompress", Arg.Set decompress, "switch to decompress file";
     "--small", Arg.Set small, "switch to enable 'small' mode, which is slower but more memory efficient";
+    "-bs", Arg.Set_int block, "block size for compression, 1-9, 9 [default] is slowest but most effective"
   ] in
   let () =
     Arg.parse
@@ -21,11 +23,12 @@ let () =
   let decompress = !decompress in
   let compress = if decompress then false else true in
   let small = !small in
+  let block = !block in
   match compress, decompress with
   | true, false ->
       let ic = open_in fname in
       let oc = open_out oname in
-      let oc' = Bz2.open_out oc in
+      let oc' = Bz2.open_out ~block oc in
       let buflen = 4096 in
       let buffer = Bytes.create buflen in
       let nread = ref buflen in
